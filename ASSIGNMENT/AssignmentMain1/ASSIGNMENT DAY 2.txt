@@ -1,0 +1,1416 @@
+--ASSIGNMENT SUBQUERY----
+----A) BASIC SUBQUERY
+use ECOMMERCE_ASSIGNMENT_DB;
+
+--1
+SELECT *
+FROM Product
+WHERE Price >
+(
+    SELECT AVG(Price)
+    FROM Product
+);
+
+--2
+select * from Product where StockQuantity <
+(
+select AVG(StockQuantity) from Product
+);
+
+--3
+SELECT *
+FROM Customer
+WHERE CustomerId IN
+(
+    SELECT CustomerId
+    FROM Orders
+);
+
+--4
+SELECT *
+FROM Customer
+WHERE CustomerId NOT IN
+(
+    SELECT CustomerId
+    FROM Orders
+);
+
+--5
+SELECT *
+FROM Product
+WHERE ProductId IN
+(
+    SELECT ProductId
+    FROM OrderItem
+);
+
+--6
+SELECT *
+FROM Product
+WHERE ProductId NOT IN
+(
+    SELECT ProductId
+    FROM OrderItem
+);
+
+--7
+SELECT *
+FROM Seller
+WHERE SellerId IN
+(
+    SELECT SellerId
+    FROM Product
+);
+
+--8
+SELECT *
+FROM Seller
+WHERE SellerId NOT IN
+(
+    SELECT SellerId
+    FROM Product
+);
+
+--9
+SELECT *
+FROM Orders
+WHERE CustomerId IN
+(
+    SELECT CustomerId
+    FROM Customer
+    WHERE City = 'Chennai'
+);
+
+--10
+SELECT *
+FROM Product
+WHERE SellerId IN
+(
+    SELECT SellerId
+    FROM Seller
+    WHERE City = 'Bangalore'
+);
+
+--B) SUBQUERY WITH IN / NOT IN
+--11
+SELECT *
+FROM Customer
+WHERE CustomerId IN
+(
+    SELECT CustomerId
+    FROM Orders
+);
+
+--12
+SELECT *
+FROM Customer
+WHERE CustomerId NOT IN
+(
+    SELECT CustomerId
+    FROM Orders
+);
+
+--13
+SELECT *
+FROM Product
+WHERE ProductId IN
+(
+    SELECT ProductId
+    FROM OrderItem
+);
+
+--14
+SELECT *
+FROM Product
+WHERE ProductId NOT IN
+(
+    SELECT ProductId
+    FROM OrderItem
+);
+
+--15
+SELECT *
+FROM Seller
+WHERE SellerId IN
+(
+    SELECT SellerId
+    FROM Product
+);
+
+--16
+SELECT *
+FROM Seller
+WHERE SellerId NOT IN
+(
+    SELECT SellerId
+    FROM Product
+);
+
+--17
+SELECT *
+FROM Orders
+WHERE OrderId IN
+(
+    SELECT OrderId
+    FROM OrderItem
+    WHERE ProductId IN
+    (
+        SELECT ProductId
+        FROM Product
+        WHERE Category = 'Mobile'
+    )
+);
+
+--18
+SELECT *
+FROM Orders
+WHERE OrderId NOT IN
+(
+    SELECT OrderId
+    FROM OrderItem
+    WHERE ProductId IN
+    (
+        SELECT ProductId
+        FROM Product
+        WHERE Category = 'Laptop'
+    )
+);
+
+--C) SUBQUERY WITH AGGREGATE FUNCTION
+--19
+SELECT *
+FROM Product
+WHERE Price =
+(
+    SELECT MAX(Price)
+    FROM Product
+);
+
+--20
+SELECT *
+FROM Product
+WHERE Price =
+(
+    SELECT MIN(Price)
+    FROM Product
+);
+
+--21
+SELECT *
+FROM Product
+WHERE Price >
+(
+    SELECT AVG(Price)
+    FROM Product
+);
+
+--22
+SELECT *
+FROM Product
+WHERE Price <
+(
+    SELECT AVG(Price)
+    FROM Product
+);
+
+--23
+SELECT *
+FROM Customer
+WHERE CustomerId IN
+(
+    SELECT o.CustomerId
+    FROM Orders o
+    JOIN OrderItem oi
+        ON o.OrderId = oi.OrderId
+    JOIN Product p
+        ON oi.ProductId = p.ProductId
+    GROUP BY o.CustomerId
+    HAVING SUM(oi.Quantity * p.Price) >
+    (
+        SELECT AVG(OrderAmount)
+        FROM
+        (
+            SELECT SUM(oi.Quantity * p.Price) AS OrderAmount
+            FROM Orders o
+            JOIN OrderItem oi
+                ON o.OrderId = oi.OrderId
+            JOIN Product p
+                ON oi.ProductId = p.ProductId
+            GROUP BY o.OrderId
+        ) A
+    )
+);
+
+--24
+SELECT *
+FROM Seller
+WHERE SellerId IN
+(
+    SELECT p.SellerId
+    FROM Product p
+    JOIN OrderItem oi
+        ON p.ProductId = oi.ProductId
+    GROUP BY p.SellerId
+    HAVING SUM(oi.Quantity * p.Price) > 50000
+);
+
+--25
+SELECT *
+FROM Product
+WHERE ProductId IN
+(
+    SELECT ProductId
+    FROM OrderItem
+    GROUP BY ProductId
+    HAVING SUM(Quantity) >
+    (
+        SELECT AVG(TotalQty)
+        FROM
+        (
+            SELECT SUM(Quantity) AS TotalQty
+            FROM OrderItem
+            GROUP BY ProductId
+        ) A
+    )
+);
+
+--26
+SELECT *
+FROM Customer
+WHERE CustomerId =
+(
+    SELECT TOP 1 o.CustomerId
+    FROM Orders o
+    JOIN OrderItem oi
+        ON o.OrderId = oi.OrderId
+    JOIN Product p
+        ON oi.ProductId = p.ProductId
+    GROUP BY o.CustomerId
+    ORDER BY SUM(oi.Quantity * p.Price) DESC
+);
+
+--27
+SELECT *
+FROM Product
+WHERE ProductId =
+(
+    SELECT TOP 1 oi.ProductId
+    FROM OrderItem oi
+    JOIN Product p
+        ON oi.ProductId = p.ProductId
+    GROUP BY oi.ProductId
+    ORDER BY SUM(oi.Quantity * p.Price) DESC
+);
+
+--28
+SELECT *
+FROM Seller
+WHERE SellerId =
+(
+    SELECT TOP 1 p.SellerId
+    FROM Product p
+    JOIN OrderItem oi
+        ON p.ProductId = oi.ProductId
+    GROUP BY p.SellerId
+    ORDER BY SUM(oi.Quantity * p.Price) DESC
+);
+
+--D) CORRELATED SUBQUERY QUESTION
+--29
+SELECT *
+FROM Product p1
+WHERE Price >
+(
+    SELECT AVG(Price)
+    FROM Product p2
+    WHERE p1.Category = p2.Category
+);
+
+--30
+SELECT *
+FROM Product p1
+WHERE Price <
+(
+    SELECT AVG(Price)
+    FROM Product p2
+    WHERE p1.Category = p2.Category
+);
+
+--31
+SELECT *
+FROM Seller s
+WHERE
+(
+    SELECT COUNT(*)
+    FROM Product p
+    WHERE p.SellerId = s.SellerId
+) > 2;
+
+--32
+SELECT *
+FROM Customer c
+WHERE
+(
+    SELECT COUNT(*)
+    FROM Orders o
+    WHERE o.CustomerId = c.CustomerId
+) > 1;
+
+--33
+SELECT o.OrderId,
+       SUM(oi.Quantity * p.Price) AS OrderAmount
+FROM Orders o
+JOIN OrderItem oi
+    ON o.OrderId = oi.OrderId
+JOIN Product p
+    ON oi.ProductId = p.ProductId
+GROUP BY o.OrderId
+HAVING SUM(oi.Quantity * p.Price) >
+(
+    SELECT AVG(OrderAmount)
+    FROM
+    (
+        SELECT SUM(oi.Quantity * p.Price) AS OrderAmount
+        FROM Orders o
+        JOIN OrderItem oi
+            ON o.OrderId = oi.OrderId
+        JOIN Product p
+            ON oi.ProductId = p.ProductId
+        GROUP BY o.OrderId
+    ) A
+);
+
+--34
+SELECT *
+FROM Product p1
+WHERE StockQuantity >
+(
+    SELECT AVG(StockQuantity)
+    FROM Product p2
+    WHERE p1.Category = p2.Category
+);
+
+--35
+SELECT *
+FROM Seller s
+WHERE
+(
+    SELECT AVG(p.Price)
+    FROM Product p
+    WHERE p.SellerId = s.SellerId
+)
+>
+(
+    SELECT AVG(Price)
+    FROM Product
+);
+
+--EXISTS / NON EXISTS QUESTION
+--36
+SELECT *
+FROM Customer c
+WHERE EXISTS
+(
+    SELECT *
+    FROM Orders o
+    WHERE o.CustomerId = c.CustomerId
+);
+
+--37
+SELECT *
+FROM Customer c
+WHERE NOT EXISTS
+(
+    SELECT *
+    FROM Orders o
+    WHERE o.CustomerId = c.CustomerId
+);
+
+--38
+SELECT *
+FROM Product p
+WHERE EXISTS
+(
+    SELECT *
+    FROM OrderItem oi
+    WHERE oi.ProductId = p.ProductId
+);
+
+--39
+SELECT *
+FROM Product p
+WHERE NOT EXISTS
+(
+    SELECT *
+    FROM OrderItem oi
+    WHERE oi.ProductId = p.ProductId
+);
+
+--40
+SELECT *
+FROM Seller s
+WHERE EXISTS
+(
+    SELECT *
+    FROM Product p
+    WHERE p.SellerId = s.SellerId
+);
+
+--41
+SELECT *
+FROM Seller s
+WHERE NOT EXISTS
+(
+    SELECT *
+    FROM Product p
+    WHERE p.SellerId = s.SellerId
+);
+
+--42
+SELECT *
+FROM Customer c
+WHERE EXISTS
+(
+    SELECT *
+    FROM Orders o
+    JOIN OrderItem oi
+        ON o.OrderId = oi.OrderId
+    JOIN Product p
+        ON oi.ProductId = p.ProductId
+    WHERE o.CustomerId = c.CustomerId
+      AND p.Category = 'Mobile'
+);
+
+--43
+SELECT *
+FROM Customer c
+WHERE NOT EXISTS
+(
+    SELECT *
+    FROM Orders o
+    JOIN OrderItem oi
+        ON o.OrderId = oi.OrderId
+    JOIN Product p
+        ON oi.ProductId = p.ProductId
+    WHERE o.CustomerId = c.CustomerId
+      AND p.Category = 'Laptop'
+);
+
+--PART 8
+---STORED PROCEDURE
+--A) BASIC STORED PROCEDURE
+--1
+CREATE PROCEDURE sp_GetAllCustomers
+AS
+BEGIN
+    SELECT * FROM Customer;
+END;
+
+EXEC sp_GetAllCustomers;
+
+--2
+CREATE PROCEDURE sp_GetAllProducts
+AS
+BEGIN
+    SELECT * FROM Product;
+END;
+
+EXEC sp_GetAllProducts;
+
+--3
+CREATE PROCEDURE sp_GetAllSellers
+AS
+BEGIN
+    SELECT * FROM Seller;
+END;
+
+EXEC sp_GetAllSellers;
+
+--4
+CREATE PROCEDURE sp_GetAllOrders
+AS
+BEGIN
+    SELECT * FROM Orders;
+END;
+
+EXEC sp_GetAllOrders;
+
+--5
+CREATE PROCEDURE sp_GetAllOrderItems
+AS
+BEGIN
+    SELECT * FROM OrderItem;
+END;
+
+EXEC sp_GetAllOrderItems;
+
+--STORED PROCEDURE WITH INPUT PARAMETER
+--6
+CREATE PROCEDURE sp_GetCustomerById
+    @CustomerId INT
+AS
+BEGIN
+    SELECT *
+    FROM Customer
+    WHERE CustomerId = @CustomerId;
+END;
+
+EXEC sp_GetCustomerById 1;
+
+--7
+CREATE PROCEDURE sp_GetProductById
+    @ProductId INT
+AS
+BEGIN
+    SELECT *
+    FROM Product
+    WHERE ProductId = @ProductId;
+END;
+
+EXEC sp_GetProductById 101;
+
+--8
+CREATE PROCEDURE sp_GetSellerById
+    @SellerId INT
+AS
+BEGIN
+    SELECT *
+    FROM Seller
+    WHERE SellerId = @SellerId;
+END;
+
+EXEC sp_GetSellerById 1;
+
+--9
+CREATE PROCEDURE sp_GetOrderById
+    @OrderId INT
+AS
+BEGIN
+    SELECT *
+    FROM Orders
+    WHERE OrderId = @OrderId;
+END;
+
+EXEC sp_GetOrderById 1;
+
+--10
+CREATE PROCEDURE sp_GetCustomersByCity
+    @City VARCHAR(50)
+AS
+BEGIN
+    SELECT *
+    FROM Customer
+    WHERE City = @City;
+END;
+
+EXEC sp_GetCustomersByCity 'Chennai';
+
+
+--11
+CREATE PROCEDURE sp_GetProductsByCategory
+    @Category VARCHAR(50)
+AS
+BEGIN
+    SELECT *
+    FROM Product
+    WHERE Category = @Category;
+END;
+
+EXEC sp_GetProductsByCategory 'Mobile';
+
+--12
+CREATE PROCEDURE sp_GetProductsBySeller
+    @SellerId INT
+AS
+BEGIN
+    SELECT *
+    FROM Product
+    WHERE SellerId = @SellerId;
+END;
+
+EXEC sp_GetProductsBySeller 1;
+
+--13
+CREATE PROCEDURE sp_GetOrdersByCustomer
+    @CustomerId INT
+AS
+BEGIN
+    SELECT *
+    FROM Orders
+    WHERE CustomerId = @CustomerId;
+END;
+
+EXEC sp_GetOrdersByCustomer 1;
+
+--14
+CREATE PROCEDURE sp_GetOrderItemsByOrder
+    @OrderId INT
+AS
+BEGIN
+    SELECT *
+    FROM OrderItem
+    WHERE OrderId = @OrderId;
+END;
+
+EXEC sp_GetOrderItemsByOrder 1;
+
+--15
+CREATE PROCEDURE sp_GetProductsGreaterThanPrice
+    @Price DECIMAL(10,2)
+AS
+BEGIN
+    SELECT *
+    FROM Product
+    WHERE Price > @Price;
+END;
+
+EXEC sp_GetProductsGreaterThanPrice 50000;
+
+--INSERT STORED PROCEDURE QUESTION
+--16
+CREATE PROCEDURE sp_InsertCustomer
+    @CustomerId INT,
+    @CustomerName VARCHAR(100),
+    @City VARCHAR(50)
+AS
+BEGIN
+    INSERT INTO Customer
+    (
+        CustomerId,
+        CustomerName,
+        City
+    )
+    VALUES
+    (
+        @CustomerId,
+        @CustomerName,
+        @City
+    );
+END;
+
+EXEC sp_InsertCustomer
+11,
+'Fayaz',
+'Chennai';
+
+--17
+CREATE PROCEDURE sp_InsertSeller
+    @SellerId INT,
+    @SellerName VARCHAR(100),
+    @Email VARCHAR(100),
+    @MobileNo BIGINT,
+    @City VARCHAR(50),
+    @Rating DECIMAL(3,2),
+    @IsActive BIT
+AS
+BEGIN
+    INSERT INTO Seller
+    (
+        SellerId,
+        SellerName,
+        Email,
+        MobileNo,
+        City,
+        Rating,
+        IsActive
+    )
+    VALUES
+    (
+        @SellerId,
+        @SellerName,
+        @Email,
+        @MobileNo,
+        @City,
+        @Rating,
+        @IsActive
+    );
+END;
+
+EXEC sp_InsertSeller
+12,
+'ABC Seller',
+'abc@gmail.com',
+9876543210,
+'Bangalore',
+4.5,
+1;
+
+--18
+CREATE PROCEDURE sp_InsertProduct
+    @ProductId INT,
+    @ProductName VARCHAR(100),
+    @Category VARCHAR(50),
+    @Price DECIMAL(10,2),
+    @StockQuantity INT,
+    @SellerId INT,
+    @CreatedDate DATETIME
+AS
+BEGIN
+    INSERT INTO Product
+    (
+        ProductId,
+        ProductName,
+        Category,
+        Price,
+        StockQuantity,
+        SellerId,
+        CreatedDate
+    )
+    VALUES
+    (
+        @ProductId,
+        @ProductName,
+        @Category,
+        @Price,
+        @StockQuantity,
+        @SellerId,
+        @CreatedDate
+    );
+END;
+GO
+
+EXEC sp_InsertProduct
+112,
+'OnePlus',
+'Mobile',
+50000,
+20,
+12,
+GETDATE();
+
+--19
+CREATE PROCEDURE sp_InsertOrder
+    @OrderId INT,
+    @CustomerId INT,
+    @OrderDate DATETIME,
+    @OrderStatus VARCHAR(50),
+    @PaymentMode VARCHAR(50),
+    @DeliveryCity VARCHAR(50)
+AS
+BEGIN
+    INSERT INTO Orders
+    (
+        OrderId,
+        CustomerId,
+        OrderDate,
+        OrderStatus,
+        PaymentMode,
+        DeliveryCity
+    )
+    VALUES
+    (
+        @OrderId,
+        @CustomerId,
+        @OrderDate,
+        @OrderStatus,
+        @PaymentMode,
+        @DeliveryCity
+    );
+END;
+
+EXEC sp_InsertOrder
+12,
+11,
+GETDATE(),
+'Pending',
+'UPI',
+'Chennai';
+
+--20
+CREATE PROCEDURE sp_InsertOrderItem
+    @OrderItemId INT,
+    @OrderId INT,
+    @ProductId INT,
+    @Quantity INT,
+    @UnitPrice DECIMAL(10,2)
+AS
+BEGIN
+    INSERT INTO OrderItem
+    (
+        OrderItemId,
+        OrderId,
+        ProductId,
+        Quantity,
+        UnitPrice
+    )
+    VALUES
+    (
+        @OrderItemId,
+        @OrderId,
+        @ProductId,
+        @Quantity,
+        @UnitPrice
+    );
+END;
+
+EXEC sp_InsertOrderItem
+12,
+12,
+112,
+2,
+50000;
+
+--D) UPDATE STORED PROCEDURE
+--21
+CREATE PROCEDURE sp_UpdateCustomerCity
+    @CustomerId INT,
+    @City VARCHAR(50)
+AS
+BEGIN
+    UPDATE Customer
+    SET City = @City
+    WHERE CustomerId = @CustomerId;
+END;
+
+EXEC sp_UpdateCustomerCity 1,'Chennai';
+
+--22
+CREATE PROCEDURE sp_UpdateCustomerMobile
+    @CustomerId INT,
+    @MobileNo VARCHAR(15)
+AS
+BEGIN
+    UPDATE Customer
+    SET MobileNo = @MobileNo
+    WHERE CustomerId = @CustomerId;
+END;
+
+EXEC sp_UpdateCustomerMobile 1,'9876543210';
+
+--23
+CREATE PROCEDURE sp_UpdateProductPrice
+    @ProductId INT,
+    @Price DECIMAL(10,2)
+AS
+BEGIN
+    UPDATE Product
+    SET Price = @Price
+    WHERE ProductId = @ProductId;
+END;
+
+EXEC sp_UpdateProductPrice 101,45000;
+
+--24
+CREATE PROCEDURE sp_UpdateProductStock
+    @ProductId INT,
+    @StockQuantity INT
+AS
+BEGIN
+    UPDATE Product
+    SET StockQuantity = @StockQuantity
+    WHERE ProductId = @ProductId;
+END;
+
+EXEC sp_UpdateProductStock 101,100;
+
+--25
+CREATE PROCEDURE sp_UpdateOrderStatus
+    @OrderId INT,
+    @Status VARCHAR(20)
+AS
+BEGIN
+    UPDATE Orders
+    SET Status=@Status
+    WHERE OrderId=@OrderId;
+END;
+
+EXEC sp_UpdateOrderStatus 1,'Delivered';
+
+--26
+CREATE PROCEDURE sp_UpdateSellerRating
+    @SellerId INT,
+    @Rating DECIMAL(3,2)
+AS
+BEGIN
+    UPDATE Seller
+    SET Rating=@Rating
+    WHERE SellerId=@SellerId;
+END;
+
+EXEC sp_UpdateSellerRating 1,4.8;
+
+--27
+CREATE PROCEDURE sp_UpdateCustomerStatus
+    @CustomerId INT,
+    @IsActive BIT
+AS
+BEGIN
+    UPDATE Customer
+    SET IsActive=@IsActive
+    WHERE CustomerId=@CustomerId;
+END;
+
+EXEC sp_UpdateCustomerStatus 1,1;
+
+--28
+CREATE PROCEDURE sp_UpdateSellerStatus
+    @SellerId INT,
+    @IsActive BIT
+AS
+BEGIN
+    UPDATE Seller
+    SET IsActive=@IsActive
+    WHERE SellerId=@SellerId;
+END;
+
+EXEC sp_UpdateSellerStatus 1,1;
+
+--E) DELETE STORED PROCEDURE
+--29
+CREATE PROCEDURE sp_DeleteCustomer
+    @CustomerId INT
+AS
+BEGIN
+    DELETE FROM Customer
+    WHERE CustomerId=@CustomerId;
+END;
+
+EXEC sp_DeleteCustomer 1;
+
+--30
+CREATE PROCEDURE sp_DeleteSeller
+    @SellerId INT
+AS
+BEGIN
+    DELETE FROM Seller
+    WHERE SellerId=@SellerId;
+END;
+EXEC sp_DeleteSeller 1;
+
+--31
+CREATE PROCEDURE sp_DeleteProduct
+    @ProductId INT
+AS
+BEGIN
+    DELETE FROM Product
+    WHERE ProductId=@ProductId;
+END;
+
+EXEC sp_DeleteProduct 101;
+
+--32
+CREATE PROCEDURE sp_DeleteOrder
+    @OrderId INT
+AS
+BEGIN
+    DELETE FROM Orders
+    WHERE OrderId=@OrderId;
+END;
+
+EXEC sp_DeleteOrder 1;
+
+--33
+CREATE PROCEDURE sp_DeleteOrderItem
+    @OrderItemId INT
+AS
+BEGIN
+    DELETE FROM OrderItem
+    WHERE OrderItemId=@OrderItemId;
+END;
+
+EXEC sp_DeleteOrderItem 1;
+
+--F) STORED PROCEDURE WITH JOINS
+--34
+CREATE PROCEDURE sp_CustomerWiseOrders
+AS
+BEGIN
+    SELECT c.CustomerName,
+           o.OrderId,
+           o.OrderDate
+    FROM Customer c
+    INNER JOIN Orders o
+    ON c.CustomerId=o.CustomerId;
+END;
+
+EXEC sp_CustomerWiseOrders;
+
+--35
+CREATE PROCEDURE sp_SellerWiseProducts
+AS
+BEGIN
+    SELECT s.SellerName,
+           p.ProductName,
+           p.Price
+    FROM Seller s
+    INNER JOIN Product p
+    ON s.SellerId=p.SellerId;
+END;
+
+EXEC sp_SellerWiseProducts;
+
+--36
+CREATE PROCEDURE sp_OrderWiseProducts
+AS
+BEGIN
+    SELECT o.OrderId,
+           p.ProductName,
+           oi.Quantity
+    FROM Orders o
+    INNER JOIN OrderItem oi
+    ON o.OrderId=oi.OrderId
+    INNER JOIN Product p
+    ON oi.ProductId=p.ProductId;
+END;
+
+EXEC sp_OrderWiseProducts;
+
+--37
+CREATE PROCEDURE sp_OrderReport
+AS
+BEGIN
+    SELECT c.CustomerName,
+           p.ProductName,
+           s.SellerName,
+           oi.Quantity,
+           p.Price,
+           oi.Quantity*p.Price AS TotalAmount
+    FROM Customer c
+    INNER JOIN Orders o
+    ON c.CustomerId=o.CustomerId
+    INNER JOIN OrderItem oi
+    ON o.OrderId=oi.OrderId
+    INNER JOIN Product p
+    ON oi.ProductId=p.ProductId
+    INNER JOIN Seller s
+    ON p.SellerId=s.SellerId;
+END;
+
+EXEC sp_OrderReport;
+
+--38
+CREATE PROCEDURE sp_CustomerTotalAmount
+AS
+BEGIN
+    SELECT c.CustomerName,
+           SUM(oi.Quantity*p.Price) AS TotalAmount
+    FROM Customer c
+    INNER JOIN Orders o
+    ON c.CustomerId=o.CustomerId
+    INNER JOIN OrderItem oi
+    ON o.OrderId=oi.OrderId
+    INNER JOIN Product p
+    ON oi.ProductId=p.ProductId
+    GROUP BY c.CustomerName;
+END;
+
+EXEC sp_CustomerTotalAmount;
+
+--39
+CREATE PROCEDURE sp_SellerTotalSales
+AS
+BEGIN
+    SELECT s.SellerName,
+           SUM(oi.Quantity*p.Price) AS TotalSales
+    FROM Seller s
+    INNER JOIN Product p
+    ON s.SellerId=p.SellerId
+    INNER JOIN OrderItem oi
+    ON p.ProductId=oi.ProductId
+    GROUP BY s.SellerName;
+END;
+
+EXEC sp_SellerTotalSales;
+
+--40
+CREATE PROCEDURE sp_ProductSalesQuantity
+AS
+BEGIN
+    SELECT p.ProductName,
+           SUM(oi.Quantity) AS TotalQuantity
+    FROM Product p
+    INNER JOIN OrderItem oi
+    ON p.ProductId=oi.ProductId
+    GROUP BY p.ProductName;
+END;
+
+EXEC sp_ProductSalesQuantity;
+
+--H) STORED PROCEDURE WITH OUTPUT PARAMETERS
+--46
+CREATE PROCEDURE sp_TotalCustomers
+    @TotalCustomers INT OUTPUT
+AS
+BEGIN
+    SELECT @TotalCustomers=COUNT(*)
+    FROM Customer;
+END;
+DECLARE @Count INT;
+
+EXEC sp_TotalCustomers @Count OUTPUT;
+
+SELECT @Count AS TotalCustomers;
+
+--47
+CREATE PROCEDURE sp_TotalProducts
+    @TotalProducts INT OUTPUT
+AS
+BEGIN
+    SELECT @TotalProducts=COUNT(*)
+    FROM Product;
+END;
+
+DECLARE @Count INT;
+
+EXEC sp_TotalProducts @Count OUTPUT;
+
+SELECT @Count AS TotalProducts;
+
+--48
+CREATE PROCEDURE sp_TotalOrders
+    @TotalOrders INT OUTPUT
+AS
+BEGIN
+    SELECT @TotalOrders=COUNT(*)
+    FROM Orders;
+END;
+
+DECLARE @Count INT;
+
+EXEC sp_TotalOrders @Count OUTPUT;
+
+SELECT @Count AS TotalOrders;
+
+--49
+CREATE PROCEDURE sp_ProductSalesAmount
+    @ProductId INT,
+    @TotalSales DECIMAL(18,2) OUTPUT
+AS
+BEGIN
+    SELECT @TotalSales=
+           SUM(oi.Quantity*p.Price)
+    FROM Product p
+    INNER JOIN OrderItem oi
+    ON p.ProductId=oi.ProductId
+    WHERE p.ProductId=@ProductId;
+END;
+
+DECLARE @Sales DECIMAL(18,2);
+
+EXEC sp_ProductSalesAmount
+     101,
+     @Sales OUTPUT;
+
+SELECT @Sales AS TotalSales;
+
+--50
+CREATE PROCEDURE sp_CustomerPurchaseAmount
+    @CustomerId INT,
+    @TotalAmount DECIMAL(18,2) OUTPUT
+AS
+BEGIN
+    SELECT @TotalAmount=
+           SUM(oi.Quantity*p.Price)
+    FROM Orders o
+    INNER JOIN OrderItem oi
+    ON o.OrderId=oi.OrderId
+    INNER JOIN Product p
+    ON oi.ProductId=p.ProductId
+    WHERE o.CustomerId=@CustomerId;
+END;
+
+DECLARE @Amount DECIMAL(18,2);
+
+EXEC sp_CustomerPurchaseAmount
+     1,
+     @Amount OUTPUT;
+
+SELECT @Amount AS TotalPurchaseAmount;
+
+--------------------------------------------------------------------------------------
+--USER DEFINED FUNCTION
+--1
+CREATE FUNCTION fn_GetEmployeeDepartmentDetails()
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT e.EmployeeId,
+           e.EmployeeName,
+           e.Salary,
+           d.DepartmentId,
+           d.DepartmentName
+    FROM Employee e
+    INNER JOIN Department d
+        ON e.DepartmentId = d.DepartmentId
+);
+
+Execute
+SELECT *
+FROM fn_GetEmployeeDepartmentDetails();
+
+--2
+User Defined Function to Get Employees by Salary Range (Using MinSalary and MaxSalary Parameters)
+CREATE FUNCTION fn_GetEmployeesBySalaryRange
+(
+    @MinSalary DECIMAL(10,2),
+    @MaxSalary DECIMAL(10,2)
+)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT *
+    FROM Employee
+    WHERE Salary BETWEEN @MinSalary AND @MaxSalary
+);
+
+Execute
+SELECT *
+FROM fn_GetEmployeesBySalaryRange(20000,50000);
+
+-- Triggers
+
+select * from Employees
+
+Select * from Department
+
+
+CREATE TABLE EmployeeAudit
+(
+AuditId int Identity(1,1) primary key,
+AuditData varchar(max),
+AuditDate datetime
+)
+
+
+CREATE TRIGGER tr_Employee_insert
+ON Employees
+AFTER INSERT
+AS 
+BEGIN
+	DECLARE @Id INT
+	DECLARE @Name varchar(100)
+	DECLARE @AuditData varchar(100)
+	SELECT @ID=EmployeeId,@Name=Name FROM INSERTED
+	SET @AuditData='New Employee added with ID ='+Cast(@ID as VARCHAR(10))+
+	' and Name '+@Name
+
+	INSERT INTO EmployeeAudit(AuditData,AuditDate) VALUES (@AuditData,GETDATE())
+END;
+
+select * from Employees;
+
+select * from EmployeeAudit;
+
+insert into Employees (Name,Gender,Email,City,Salary,MobileNo,DepartmentId)
+Values ('sample','Female','sample@mail.com','Vellore',45000,23876576334,1);
+
+
+CREATE TRIGGER tr_Employee_delete
+ON Employees
+AFTER DELETE
+AS 
+BEGIN
+	DECLARE @Id INT
+	DECLARE @Name varchar(100)
+	DECLARE @AuditData varchar(100)
+	SELECT @ID=EmployeeId,@Name=Name FROM DELETED
+	SET @AuditData='An Employee delete  with ID ='+Cast(@ID as VARCHAR(10))+
+	' and Name '+@Name
+
+	INSERT INTO EmployeeAudit(AuditData,AuditDate) VALUES (@AuditData,GETDATE())
+END;
+
+delete from Employees where EmployeeId=12;
+
+
+ALTER TRIGGER tr_Employee_update
+ON Employees
+FOR UPDATE
+AS 
+BEGIN
+	DECLARE @Id INT
+	DECLARE @old_Name varchar(100),@new_Name varchar(100)
+	DECLARE @old_Salary DECIMAL(10,2), @new_Salary  DECIMAL(10,2)
+	DECLARE @old_Gender varchar(100),@new_Gender varchar(100)
+	DECLARE @old_Email VARCHAR(100), @new_Email  VARCHAR(100)
+	DECLARE @old_City varchar(100),@new_City varchar(100)
+	DECLARE @AuditData varchar(max)
+	
+	select * INTO #UpdatedDataTempTable FROM INSERTED
+
+	WHILE(EXISTS(SELECT EmployeeId FROM #UpdatedDataTempTable))
+	BEGIN
+		SET @AuditData=''
+
+		SELECT TOP 1 @Id=EmployeeId,
+		@new_Name=Name,
+		@new_Gender=Gender,
+		@new_City=City,
+		@new_Email=Email,
+		@new_Salary=Salary FROM #UpdatedDataTempTable
+
+		SELECT 
+		@old_Name=Name,
+		@old_Gender=Gender,
+		@old_City=City,
+		@old_Email=Email,
+		@old_Salary=Salary FROM DELETED where EmployeeId=@Id
+
+		set @AuditData='Employee with id = ' +cast(@Id as varchar(10))+' Changed'
+
+		If(@old_Name<>@new_Name)
+		BEGIN
+		SET @AuditData= @AuditData +' Name from ' +@old_Name +' to '+@new_Name
+		END
+		
+		If(@old_Gender<>@new_Gender)
+		BEGIN
+		SET @AuditData= @AuditData +' Gender from ' +@old_Gender +' to '+@new_Gender
+		END
+		If(@old_City<>@new_City)
+		BEGIN
+		SET @AuditData= @AuditData +' City from ' +@old_City +' to '+@new_City
+		END
+		If(@old_Email<>@new_Email)
+		BEGIN
+		SET @AuditData= @AuditData +' Email from ' +@old_Email +' to '+@new_Email
+		END
+		
+		If(@old_Salary<>@new_Salary)
+		BEGIN
+		SET @AuditData= @AuditData +' Salary from ' + ISNULL(CAST(@old_Salary AS VARCHAR(10)),NULL) +
+		' to '+ISNULL(CAST(@new_Salary as varchar(10)),NULL)
+		END
+		
+	INSERT INTO EmployeeAudit(AuditData,AuditDate) VALUES (@AuditData,GETDATE())
+
+	DELETE FROM #UpdatedDataTempTable WHERE EmployeeId=@ID
+	END
+END;
+
+
+select * from Employees;
+select * from EmployeeAudit
+
+update Employees Set Email='Yokiths@hexaware.com'  where EmployeeId=7
+
+--INSTEAD TRIGGER
+
+create trigger tr_InsteadOfInsert_Employees
+ON Employees
+INSTEAD OF INSERT
+AS
+BEGIN
+	IF EXISTS
+	(
+	SELECT 1 FROM INSERTED WHERE SALARY<10000
+	)
+	BEGIN
+		RAISERROR('Salary should not be less than 10000.',16,1);
+		RETURN;
+	END;
+insert into Employees
+(Name,Gender,City,Salary,Email,MobileNo,DepartmentId)
+SELECT Name,Gender,City,Salary,Email,MobileNo,DepartmentId FROM INSERTED;
+END
+
+
+insert into Employees (Name,Gender,City,Email,Salary)
+Values ('sample','Male','Texas','sample@mail.com',2000) -- error because of instead of triger
+
+
+insert into Employees (Name,Gender,City,Email,Salary)
+Values ('sample','Male','Texas','sample@mail.com',12000)
+
