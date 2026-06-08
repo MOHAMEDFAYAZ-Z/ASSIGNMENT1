@@ -1,0 +1,14 @@
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\bin\Debug\net10.0\Solidprinciples.exe
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\bin\Debug\net10.0\Solidprinciples.deps.json
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\bin\Debug\net10.0\Solidprinciples.runtimeconfig.json
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\bin\Debug\net10.0\Solidprinciples.dll
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\bin\Debug\net10.0\Solidprinciples.pdb
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\obj\Debug\net10.0\Solidprinciples.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\obj\Debug\net10.0\Solidprinciples.AssemblyInfoInputs.cache
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\obj\Debug\net10.0\Solidprinciples.AssemblyInfo.cs
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\obj\Debug\net10.0\Solidprinciples.csproj.CoreCompileInputs.cache
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\obj\Debug\net10.0\Solidprinciples.dll
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\obj\Debug\net10.0\refint\Solidprinciples.dll
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\obj\Debug\net10.0\Solidprinciples.pdb
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\obj\Debug\net10.0\Solidprinciples.genruntimeconfig.cache
+C:\Users\famie\OneDrive\Desktop\HEXAWARE TRAINING\VISUAL STUDIO\ConsoleDemo1\Solidprinciples\obj\Debug\net10.0\ref\Solidprinciples.dll
